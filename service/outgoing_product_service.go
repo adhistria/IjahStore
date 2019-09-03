@@ -11,6 +11,7 @@ import (
 type (
 	OutgoingProductService interface {
 		AddOutgoingProduct(context.Context, *model.OutgoingProduct) (*model.OutgoingProduct, error)
+		GetOutgoingProducts(context.Context) ([]model.OutgoingProduct, error)
 	}
 
 	outgoingProductServiceImpl struct {
@@ -41,6 +42,19 @@ func (ops *outgoingProductServiceImpl) AddOutgoingProduct(ctx context.Context, o
 	outgoingProduct.CreatedAt = time.Now()
 
 	return outgoingProduct, err
+}
+
+func (ops *outgoingProductServiceImpl) GetOutgoingProducts(ctx context.Context) ([]model.OutgoingProduct, error) {
+	var outgoingProducts []model.OutgoingProduct
+	outgoingProducts, err := ops.OutgoingProductRepository.FindAll()
+
+	for index, _ := range outgoingProducts {
+		outgoingProducts[index].Product, err = ops.productRepository.GetProduct(outgoingProducts[index].ProductID)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return outgoingProducts, err
 }
 
 func NewOutgoingProductService(pr repository.ProductRepository, opr repository.OutgoingProductRepository) OutgoingProductService {

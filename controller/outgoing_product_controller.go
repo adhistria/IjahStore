@@ -37,9 +37,23 @@ func (opc *outgoingProductController) AddOutgoingProduct(w http.ResponseWriter, 
 	return
 }
 
+func (opc *outgoingProductController) GetOutgoingProducts(w http.ResponseWriter, r *http.Request) {
+
+	OutgoingProducts, err := opc.OutgoingProductService.GetOutgoingProducts(context.Background())
+
+	if err != nil {
+		response.APIErrorResponse(w, 500, err.Error())
+		return
+	}
+
+	response.APISuccessResponse(w, 200, OutgoingProducts)
+	return
+}
+
 func NewOutgoingProductController(router *mux.Router, ips service.OutgoingProductService) outgoingProductController {
 	controller := outgoingProductController{OutgoingProductService: ips}
 
 	router.HandleFunc("/outgoing-products", controller.AddOutgoingProduct).Methods("POST")
+	router.HandleFunc("/outgoing-products", controller.GetOutgoingProducts).Methods("GET")
 	return controller
 }
