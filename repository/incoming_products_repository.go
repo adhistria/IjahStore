@@ -7,6 +7,7 @@ import (
 
 type IncomingProductRepository interface {
 	Add(*model.IncomingProduct) error
+	FindAll() ([]model.IncomingProduct, error)
 }
 
 type incomingProductRepositoryImpl struct {
@@ -30,6 +31,12 @@ func (ipr *incomingProductRepositoryImpl) Add(ip *model.IncomingProduct) error {
 	ip.ID = int(id)
 	return err
 
+}
+
+func (ipr *incomingProductRepositoryImpl) FindAll() ([]model.IncomingProduct, error) {
+	var incomingProducts []model.IncomingProduct
+	err := ipr.db.Select(&incomingProducts, "SELECT * FROM IncomingProducts")
+	return incomingProducts, err
 }
 
 func NewIncomingProductRepository(Db *sqlx.DB) IncomingProductRepository {
