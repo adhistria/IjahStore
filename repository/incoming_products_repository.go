@@ -8,6 +8,7 @@ import (
 type IncomingProductRepository interface {
 	Add(*model.IncomingProduct) error
 	FindAll() ([]model.IncomingProduct, error)
+	GetProductValues() ([]model.ProductValue, error)
 }
 
 type incomingProductRepositoryImpl struct {
@@ -37,6 +38,13 @@ func (ipr *incomingProductRepositoryImpl) FindAll() ([]model.IncomingProduct, er
 	var incomingProducts []model.IncomingProduct
 	err := ipr.db.Select(&incomingProducts, "SELECT * FROM IncomingProducts")
 	return incomingProducts, err
+}
+
+func (ipr *incomingProductRepositoryImpl) GetProductValues() ([]model.ProductValue, error) {
+	getProductValuesQuery := `SELECT (SUM(total_purchase_price) / SUM(total_received_order)) AS average_price,  SKU, total, name FROM IncomingProducts  LEFT JOIN Products ON product_id = SKU GROUP BY (product_id)`
+	var productValues []model.ProductValue
+	err := ipr.db.Select(&productValues, getProductValuesQuery)
+	return productValues, err
 }
 
 func NewIncomingProductRepository(Db *sqlx.DB) IncomingProductRepository {
