@@ -10,6 +10,7 @@ type ProductRepository interface {
 	FindAll() ([]model.Product, error)
 	AddTotalProduct(*model.IncomingProduct) error
 	GetProduct(string) (model.Product, error)
+	SubstractTotalProduct(*model.OutgoingProduct) error
 }
 
 type productRepositoryImpl struct {
@@ -44,6 +45,14 @@ func (pr *productRepositoryImpl) GetProduct(productId string) (model.Product, er
 	err := pr.db.Get(&product, "SELECT * FROM Products WHERE SKU = $1", productId)
 
 	return product, err
+}
+
+func (pr *productRepositoryImpl) SubstractTotalProduct(op *model.OutgoingProduct) error {
+	updateProductQuery := `UPDATE Products SET total = total - ? WHERE SKU = ?`
+
+	_, err := pr.db.Exec(updateProductQuery, op.SoldAmount, op.ProductID)
+
+	return err
 }
 
 func NewProductRepository(Db *sqlx.DB) ProductRepository {
