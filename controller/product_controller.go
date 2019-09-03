@@ -37,8 +37,22 @@ func (pc *productController) AddProduct(w http.ResponseWriter, r *http.Request) 
 	return
 }
 
+func (pc *productController) GetProducts(w http.ResponseWriter, r *http.Request) {
+
+	products, err := pc.productService.GetProducts(context.Background())
+
+	if err != nil {
+		response.APIErrorResponse(w, 500, err.Error())
+		return
+	}
+
+	response.APISuccessResponse(w, 200, products)
+	return
+}
+
 func NewProductController(router *mux.Router, ps service.ProductService) productController {
 	controller := productController{productService: ps}
 	router.HandleFunc("/products", controller.AddProduct).Methods("POST")
+	router.HandleFunc("/products", controller.GetProducts).Methods("GET")
 	return controller
 }
