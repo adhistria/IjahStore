@@ -8,6 +8,8 @@ import (
 type ProductRepository interface {
 	Add(*model.Product) error
 	FindAll() ([]model.Product, error)
+	AddTotalProduct(*model.IncomingProduct) error
+	GetProduct(string) (model.Product, error)
 }
 
 type productRepositoryImpl struct {
@@ -26,6 +28,22 @@ func (pr *productRepositoryImpl) FindAll() ([]model.Product, error) {
 	var products []model.Product
 	err := pr.db.Select(&products, "SELECT * FROM Products")
 	return products, err
+}
+
+func (pr *productRepositoryImpl) AddTotalProduct(ip *model.IncomingProduct) error {
+	updateProductQuery := `UPDATE Products SET total = total + ? WHERE SKU = ?`
+
+	_, err := pr.db.Exec(updateProductQuery, ip.TotalReceiveOrder, ip.ProductID)
+
+	return err
+
+}
+
+func (pr *productRepositoryImpl) GetProduct(productId string) (model.Product, error) {
+	var product model.Product
+	err := pr.db.Get(&product, "SELECT * FROM Products WHERE SKU = $1", productId)
+
+	return product, err
 }
 
 func NewProductRepository(Db *sqlx.DB) ProductRepository {

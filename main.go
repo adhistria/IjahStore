@@ -16,8 +16,10 @@ func main() {
 	db := driver.GetConnection()
 	productRepository := repository.NewProductRepository(db)
 	productService := service.NewProductService(productRepository)
-
+	incomingProductRepository := repository.NewIncomingProductRepository(db)
+	incomingProductService := service.NewIncomingProductService(productRepository, incomingProductRepository)
 	controller.NewProductController(router, productService)
+	controller.NewIncomingProductController(router, incomingProductService)
 
 	log.Print("Starting Server")
 	err := http.ListenAndServe(":8000", router)
