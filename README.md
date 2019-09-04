@@ -62,8 +62,7 @@ go run main.go
 | POST | /products| Get actual stock of products|
 | POST | /incoming-products | To store product that will be stored into the inventory. |  
 | GET | /incoming-products| Get history stored product |
-| POST | /outgoing-products| To store product, quantity, notes of the products going out of inventory
-|
+| POST | /outgoing-products| To store product, quantity, notes of the products going out of inventory|
 | GET | /outgoing-products | Get history of product that going out of inventory |  
 | GET | /reports | Shows a report for ijah to help her analyze and make decision. This report is related to total inventory value of Toko Ijah.|  
 | GET | /sales-reports | Shows a report for ijah to help her analyze and make decision. This report is related to omzet / selling / profit.|
