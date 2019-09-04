@@ -21,7 +21,7 @@ func main() {
 	outgoingProductRepository := repository.NewOutgoingProductRepository(db)
 	outgoingProductService := service.NewOutgoingProductService(productRepository, outgoingProductRepository)
 	reportProductValueService := service.NewReportProductValueService(incomingProductRepository, outgoingProductRepository)
-	migrationService := service.NewMigrationService(productRepository)
+	migrationService := service.NewMigrationService(productRepository, incomingProductRepository)
 	controller.NewProductController(router, productService)
 	controller.NewIncomingProductController(router, incomingProductService)
 	controller.NewOutgoingProductController(router, outgoingProductService)

@@ -10,6 +10,7 @@ type IncomingProductRepository interface {
 	FindAll() ([]model.IncomingProduct, error)
 	GetProductValues() ([]model.ProductValue, error)
 	GetAveragePriceByProductIDAndTimestamps(productID string, createdAt string) (int, error)
+	AddWithTimestamps(*model.IncomingProduct) error
 }
 
 type incomingProductRepositoryImpl struct {
@@ -53,6 +54,25 @@ func (ipr *incomingProductRepositoryImpl) GetAveragePriceByProductIDAndTimestamp
 	var averagePrice int
 	err := ipr.db.Get(&averagePrice, getAveragePricesQuery, productID, createdAt)
 	return averagePrice, err
+}
+
+func (ipr *incomingProductRepositoryImpl) AddWithTimestamps(ip *model.IncomingProduct) error {
+	insertIncomingProductQuery := `INSERT INTO IncomingProducts (total_order, total_received_order, purchase_price, total_purchase_price, receipt_number,  notes, product_id, created_at) VALUES(?, ?, ?, ?, ?, ?, ?, ?);`
+	result, err := ipr.db.Exec(insertIncomingProductQuery, ip.TotalOrder, ip.TotalReceiveOrder, ip.PurchasePrice, ip.TotalPurchasePrice, ip.ReceiptNumber, ip.Notes, ip.ProductID, ip.CreatedAt)
+
+	if err != nil {
+		return err
+	}
+
+	id, err := result.LastInsertId()
+
+	if err != nil {
+		return err
+	}
+
+	ip.ID = int(id)
+	return err
+
 }
 
 func NewIncomingProductRepository(Db *sqlx.DB) IncomingProductRepository {
