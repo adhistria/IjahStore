@@ -2,7 +2,6 @@ package service
 
 import (
 	"encoding/csv"
-	"fmt"
 	"log"
 	"mime/multipart"
 	"strconv"
@@ -32,7 +31,6 @@ func (ms *migrationServiceImpl) MigrateProducts(file multipart.File, handler *mu
 	var products []model.Product
 	defer file.Close()
 
-	fmt.Println("disini")
 	records, err := csv.NewReader(file).ReadAll()
 	if err != nil {
 		log.Print(err)
@@ -54,8 +52,6 @@ func (ms *migrationServiceImpl) MigrateProducts(file multipart.File, handler *mu
 		err = ms.productRepository.Add(&product)
 	}
 
-	fmt.Println("diakhir")
-	fmt.Println(err)
 	return err
 
 }
