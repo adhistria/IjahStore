@@ -9,6 +9,7 @@ type IncomingProductRepository interface {
 	Add(*model.IncomingProduct) error
 	FindAll() ([]model.IncomingProduct, error)
 	GetProductValues() ([]model.ProductValue, error)
+	GetAveragePriceByProductIDAndTimestamps(productID string, createdAt string) (int, error)
 }
 
 type incomingProductRepositoryImpl struct {
@@ -45,6 +46,13 @@ func (ipr *incomingProductRepositoryImpl) GetProductValues() ([]model.ProductVal
 	var productValues []model.ProductValue
 	err := ipr.db.Select(&productValues, getProductValuesQuery)
 	return productValues, err
+}
+
+func (ipr *incomingProductRepositoryImpl) GetAveragePriceByProductIDAndTimestamps(productID string, createdAt string) (int, error) {
+	getAveragePricesQuery := `SELECT (SUM(total_purchase_price) / SUM(total_received_order)) AS average_price  FROM IncomingProducts  WHERE IncomingProducts.product_id = ? AND created_at <= ? GROUP BY (product_id) ;`
+	var averagePrice int
+	err := ipr.db.Get(&averagePrice, getAveragePricesQuery, productID, createdAt)
+	return averagePrice, err
 }
 
 func NewIncomingProductRepository(Db *sqlx.DB) IncomingProductRepository {
