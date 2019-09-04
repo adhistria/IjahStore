@@ -107,5 +107,6 @@ func (rc *reportController) GetSalesReports(w http.ResponseWriter, r *http.Reque
 func NewReportController(router *mux.Router, ps service.ReportService) reportController {
 	controller := reportController{ReportService: ps}
 	router.HandleFunc("/reports", controller.GetProductValuesReports).Methods("GET")
+	router.HandleFunc("/sales-reports", controller.GetSalesReports).Methods("GET")
 	return controller
 }
