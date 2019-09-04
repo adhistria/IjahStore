@@ -70,10 +70,6 @@ go run main.go
 | POST | /migrate-data-incoming-products| To store product that will be stored into the inventory|
 | POST | /migrate-data-outgoing-products| Migrate data to store product, quantity, notes of the products going out of inventory|
 
-
-
-| Get| / | Open page which connected to websocket|
-
 Raw body /products
 ```json
 {
