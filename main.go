@@ -21,10 +21,12 @@ func main() {
 	outgoingProductRepository := repository.NewOutgoingProductRepository(db)
 	outgoingProductService := service.NewOutgoingProductService(productRepository, outgoingProductRepository)
 	reportProductValueService := service.NewReportProductValueService(incomingProductRepository, outgoingProductRepository)
+	migrationService := service.NewMigrationService(productRepository)
 	controller.NewProductController(router, productService)
 	controller.NewIncomingProductController(router, incomingProductService)
 	controller.NewOutgoingProductController(router, outgoingProductService)
 	controller.NewReportController(router, reportProductValueService)
+	controller.NewMigrationController(router, migrationService)
 	log.Print("Starting Server")
 	err := http.ListenAndServe(":8000", router)
 	if err != nil {
