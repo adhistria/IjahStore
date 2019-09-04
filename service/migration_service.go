@@ -17,11 +17,13 @@ type (
 	MigrationService interface {
 		MigrateProducts(multipart.File, *multipart.FileHeader) error
 		MigrateIncomingProducts(multipart.File, *multipart.FileHeader) error
+		MigrateOutgoingProducts(multipart.File, *multipart.FileHeader) error
 	}
 
 	migrationServiceImpl struct {
 		productRepository         repository.ProductRepository
 		incomingProductRepository repository.IncomingProductRepository
+		outgoingProductRepository repository.OutgoingProductRepository
 	}
 )
 
@@ -122,9 +124,72 @@ func (ms *migrationServiceImpl) MigrateIncomingProducts(file multipart.File, han
 	return err
 }
 
-func NewMigrationService(pr repository.ProductRepository, ipr repository.IncomingProductRepository) MigrationService {
+func (ms *migrationServiceImpl) MigrateOutgoingProducts(file multipart.File, handler *multipart.FileHeader) error {
+
+	var outgoingProducts []model.OutgoingProduct
+	defer file.Close()
+
+	records, err := csv.NewReader(file).ReadAll()
+	if err != nil {
+		log.Print(err)
+		return err
+	}
+
+	for _, record := range records[1:] {
+
+		layoutFormat := "2006-01-02 5:04:05.000+07:00"
+		fixDate := record[0] + ".000+07:00"
+		date, err := time.Parse(layoutFormat, fixDate)
+
+		if err != nil {
+			log.Print(err)
+			return err
+		}
+
+		soldAmount, err := strconv.Atoi(record[3])
+		if err != nil {
+			log.Print(err)
+			return err
+		}
+
+		sellingPriceString := strings.Replace(record[4][2:], ".", "", -1)
+		sellingPrice, err := strconv.Atoi(sellingPriceString)
+		if err != nil {
+			log.Print(err)
+			return err
+		}
+
+		totalSellingPriceString := strings.Replace(record[5][2:], ".", "", -1)
+		totalSellingPrice, err := strconv.Atoi(totalSellingPriceString)
+		if err != nil {
+			log.Print(err)
+			return err
+		}
+
+		outgoingProduct := model.OutgoingProduct{
+			CreatedAt:         date,
+			ProductID:         record[1],
+			SoldAmount:        soldAmount,
+			SellingPrice:      sellingPrice,
+			TotalSellingPrice: totalSellingPrice,
+			Notes:             record[6],
+		}
+
+		outgoingProducts = append(outgoingProducts, outgoingProduct)
+		err = ms.outgoingProductRepository.AddWithTimestamps(&outgoingProduct)
+		if err != nil {
+			log.Print(err)
+			return err
+		}
+		err = ms.productRepository.SubstractTotalProduct(&outgoingProduct)
+	}
+	return err
+}
+
+func NewMigrationService(pr repository.ProductRepository, ipr repository.IncomingProductRepository, opr repository.OutgoingProductRepository) MigrationService {
 	return &migrationServiceImpl{
 		productRepository:         pr,
 		incomingProductRepository: ipr,
+		outgoingProductRepository: opr,
 	}
 }
